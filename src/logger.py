@@ -1,6 +1,6 @@
 """Central logging setup.
 
-Writes to logs/pipeline_YYYYMMDD.log and to the console, using the
+Writes to logs/emailagent__YYYYMMDD.log and to the console, using the
 timestamp format mm/dd/yy HH:MM:SS. Import get_logger() everywhere instead
 of using print().
 """
@@ -17,7 +17,7 @@ LOG_FORMAT = "%(asctime)s | %(levelname)-7s | %(message)s"
 
 
 def get_logger(name: str = "onboarding") -> logging.Logger:
-    """Return a configured logger (file + console). Safe to call repeatedly."""
+    """Return a configured logger. Safe to call repeatedly."""
     logger = logging.getLogger(name)
     if logger.handlers:  # already configured
         return logger
@@ -25,7 +25,7 @@ def get_logger(name: str = "onboarding") -> logging.Logger:
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
 
-    log_file = config.LOGS_DIR / f"pipeline_{datetime.now().strftime('%Y%m%d')}.log"
+    log_file = config.LOGS_DIR / f"emailagent_{datetime.now().strftime('%Y%m%d')}.log"
     file_handler = logging.FileHandler(log_file, encoding="utf-8")
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)

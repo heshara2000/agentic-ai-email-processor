@@ -10,6 +10,9 @@ import re
 import chromadb
 
 import config
+from logger import get_logger
+
+log = get_logger()
 
 COLLECTION_NAME = "onboarding_kb"
 
@@ -85,11 +88,11 @@ def build() -> None:
         ids.append(f"manager-{i}")
 
     collection.add(documents=documents, metadatas=metadatas, ids=ids)
-    print(f"✅ Loaded {len(documents)} documents into '{COLLECTION_NAME}'.")
-    print(f"   Departments: {sum(1 for m in metadatas if m['type'] == 'department')}")
-    print(f"   Policy rules: {sum(1 for m in metadatas if m['type'] == 'policy')}")
-    print(f"   Offices: {sum(1 for m in metadatas if m['type'] == 'office')}")
-    print(f"   Managers: {sum(1 for m in metadatas if m['type'] == 'manager')}")
+    log.info("Loaded %d documents into '%s'.", len(documents), COLLECTION_NAME)
+    log.info("   Departments: %d", sum(1 for m in metadatas if m["type"] == "department"))
+    log.info("   Policy rules: %d", sum(1 for m in metadatas if m["type"] == "policy"))
+    log.info("   Offices: %d", sum(1 for m in metadatas if m["type"] == "office"))
+    log.info("   Managers: %d", sum(1 for m in metadatas if m["type"] == "manager"))
 
 
 if __name__ == "__main__":

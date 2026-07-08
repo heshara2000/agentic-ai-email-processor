@@ -13,15 +13,15 @@ __pycache__/
 .pytest_cache/
 
 # Vector store / generated data
-data/chroma/
-data/output/*.csv
-data/output/*.db
+chroma_db/
+outputs/*.csv
+logs/*.log
+data/inbox/
 
 # OS
 .DS_Store
 Thumbs.db
 
 
-.env
-__pycache__/
-chroma_db/
+##test codes
+test_code_files/

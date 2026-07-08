@@ -1,0 +1,26 @@
+{
+    "metadata": {
+        "file_name": "employee_1.pdf",
+        "sender": "unknown",
+        "processed_at": "2026-07-08T19:36:16+00:00",
+        "document_type": "Employee Onboarding"
+    },
+    "employee_data": {
+        "employee_name": "John Smith",
+        "email": "john.smith@gmail.com",
+        "department": "Engineering",
+        "manager": "Sarah Brown",
+        "office": "Colombo",
+        "start_date": "2026-08-01"
+    },
+    "validation": {
+        "department_valid": true,
+        "manager_valid": true,
+        "office_valid": true
+    },
+    "flags": [
+        "Email 'john.smith@gmail.com' is not a valid @flatrock.com address"
+    ],
+    "status": "Human Review",
+    "confidence": 0.83
+}

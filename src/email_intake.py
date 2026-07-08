@@ -17,7 +17,10 @@ from email import policy
 from pathlib import Path
 
 import config
+from logger import get_logger
 from main import process_document
+
+log = get_logger()
 
 INBOX_DIR = config.DATA_DIR / "inbox"
 INBOX_DIR.mkdir(parents=True, exist_ok=True)
@@ -34,7 +37,7 @@ def _save_attachments(msg, out_dir: Path) -> list[str]:
         if not filename:
             continue
         if Path(filename).suffix.lower() not in SUPPORTED_SUFFIXES:
-            print(f"   skipping unsupported attachment: {filename}")
+            log.warning("   skipping unsupported attachment: %s", filename)
             continue
         data = part.get_payload(decode=True)
         if not data:
@@ -42,18 +45,18 @@ def _save_attachments(msg, out_dir: Path) -> list[str]:
         dest = out_dir / filename
         dest.write_bytes(data)
         saved.append(str(dest))
-        print(f"   saved attachment: {dest}")
+        log.info("   saved attachment: %s", dest)
     return saved
 
 
 def from_eml(eml_path: str) -> list[tuple[str, str]]:
     """Extract attachments from a local .eml file. Returns [(path, sender)]."""
-    print(f"Reading email file: {eml_path}")
+    log.info("Reading email file: %s", eml_path)
     with open(eml_path, "rb") as fh:
         msg = email.message_from_binary_file(fh, policy=policy.default)
     sender = str(msg["from"] or "unknown")
-    print(f"   From   : {sender}")
-    print(f"   Subject: {msg['subject']}")
+    log.info("   From   : %s", sender)
+    log.info("   Subject: %s", msg["subject"])
     return [(path, sender) for path in _save_attachments(msg, INBOX_DIR)]
 
 
@@ -64,18 +67,18 @@ def from_imap() -> list[tuple[str, str]]:
         or not config.IMAP_PASSWORD
         or config.IMAP_PASSWORD == "your-app-password"
     ):
-        print("⚠️  IMAP not configured. Set IMAP_USER and IMAP_PASSWORD in .env first.")
-        print("   (Gmail: create an App Password at https://myaccount.google.com/apppasswords)")
+        log.warning("IMAP not configured. Set IMAP_USER and IMAP_PASSWORD in .env first.")
+        log.warning("   (Gmail: create an App Password at https://myaccount.google.com/apppasswords)")
         return []
 
-    print(f"Connecting to {config.IMAP_HOST} as {config.IMAP_USER} ...")
+    log.info("Connecting to %s as %s ...", config.IMAP_HOST, config.IMAP_USER)
     imap = imaplib.IMAP4_SSL(config.IMAP_HOST, config.IMAP_PORT)
     imap.login(config.IMAP_USER, config.IMAP_PASSWORD)
     imap.select(config.IMAP_FOLDER)
 
     _, data = imap.search(None, "UNSEEN")
     message_ids = data[0].split()
-    print(f"   {len(message_ids)} unread message(s) found")
+    log.info("   %d unread message(s) found", len(message_ids))
 
     saved: list[tuple[str, str]] = []
     for num in message_ids:
@@ -83,7 +86,7 @@ def from_imap() -> list[tuple[str, str]]:
         raw = msg_data[0][1]
         msg = email.message_from_bytes(raw, policy=policy.default)
         sender = str(msg["from"] or "unknown")
-        print(f"   Email from {sender} | {msg['subject']}")
+        log.info("   Email from %s | %s", sender, msg["subject"])
         saved.extend((path, sender) for path in _save_attachments(msg, INBOX_DIR))
 
     imap.logout()
@@ -93,20 +96,20 @@ def from_imap() -> list[tuple[str, str]]:
 def run(mode: str, arg: str | None) -> int:
     if mode == "eml":
         if not arg:
-            print("Usage: python src/email_intake.py eml <path-to-.eml>")
+            log.error("Usage: python src/email_intake.py eml <path-to-.eml>")
             return 1
         attachments = from_eml(arg)
     elif mode == "imap":
         attachments = from_imap()
     else:
-        print("Unknown mode. Use:  eml <file>   or   imap")
+        log.error("Unknown mode. Use:  eml <file>   or   imap")
         return 1
 
     if not attachments:
-        print("No supported attachments found.")
+        log.warning("No supported attachments found.")
         return 0
 
-    print(f"\nPicked up {len(attachments)} attachment(s). Running the pipeline...\n")
+    log.info("Picked up %d attachment(s). Running the pipeline...", len(attachments))
     for path, sender in attachments:
         process_document(path, sender=sender)
     return 0
