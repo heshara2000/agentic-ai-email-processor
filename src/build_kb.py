@@ -59,10 +59,37 @@ def build() -> None:
         metadatas.append({"type": "policy"})
         ids.append(f"policy-{i}")
 
+    # 3) Approved office locations -> one doc per office.
+    offices_file = config.KNOWLEDGE_DIR / "offices.md"
+    office_pattern = re.compile(r"^(.+?) is an approved", re.IGNORECASE)
+    for i, line in enumerate(offices_file.read_text(encoding="utf-8").splitlines()):
+        match = office_pattern.match(line.strip())
+        if not match:
+            continue
+        office = match.group(1).strip()
+        documents.append(line.strip())
+        metadatas.append({"type": "office", "office": office})
+        ids.append(f"office-{i}")
+
+    # 4) Manager directory -> one doc per manager, with structured metadata.
+    managers_file = config.KNOWLEDGE_DIR / "managers.md"
+    manager_pattern = re.compile(r"^(.+?) is a manager in the (.+?) department", re.IGNORECASE)
+    for i, line in enumerate(managers_file.read_text(encoding="utf-8").splitlines()):
+        match = manager_pattern.match(line.strip())
+        if not match:
+            continue
+        manager = match.group(1).strip()
+        department = match.group(2).strip()
+        documents.append(line.strip())
+        metadatas.append({"type": "manager", "manager": manager, "department": department})
+        ids.append(f"manager-{i}")
+
     collection.add(documents=documents, metadatas=metadatas, ids=ids)
     print(f"✅ Loaded {len(documents)} documents into '{COLLECTION_NAME}'.")
     print(f"   Departments: {sum(1 for m in metadatas if m['type'] == 'department')}")
     print(f"   Policy rules: {sum(1 for m in metadatas if m['type'] == 'policy')}")
+    print(f"   Offices: {sum(1 for m in metadatas if m['type'] == 'office')}")
+    print(f"   Managers: {sum(1 for m in metadatas if m['type'] == 'manager')}")
 
 
 if __name__ == "__main__":

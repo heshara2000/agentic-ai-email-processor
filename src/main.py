@@ -14,68 +14,90 @@ import sys
 import traceback
 
 import config
-from nodes import extract_employee_json
+from nodes import extract_records
 from rag import validate_onboarding
-from storage import route_and_store
+from storage import route_and_store, save_result_json
 
 
-def process_document(file_path: str) -> dict:
-    """Run one document through the full pipeline. Never raises — errors are routed to review."""
+def process_document(file_path: str, sender: str | None = None) -> list[dict]:
+    """Run one file through the full pipeline. A CSV may yield several records.
+
+    Never raises — a bad/corrupt file is routed to human review instead.
+    """
     print("=" * 64)
     print(f"PROCESSING: {file_path}")
     print("=" * 64)
 
     try:
-        data = extract_employee_json(file_path)
+        records = extract_records(file_path)
     except Exception as exc:  # noqa: BLE001 - a bad/corrupt file must not crash the batch
         print(f"❌ Could not read/extract this file: {type(exc).__name__}: {exc}")
         validation = {
             "needs_human_review": True,
             "flags": [f"Extraction failed: {type(exc).__name__}"],
+            "field_validation": {},
+            "confidence": 0.0,
         }
         result = route_and_store(file_path, {}, validation)
+        save_result_json(file_path, {}, validation, sender=sender)
         print(f"Decision: 🚩 HUMAN REVIEW  ->  {result['stored_in']}\n")
-        return result
+        return [result]
 
-    validation = validate_onboarding(data)
-    result = route_and_store(file_path, data, validation)
+    results: list[dict] = []
+    for i, data in enumerate(records, start=1):
+        if len(records) > 1:
+            print(f"\n--- Record {i} of {len(records)} ---")
 
-    print("Extracted:")
-    for key, value in data.items():
-        print(f"   {key:15}: {value}")
+        validation = validate_onboarding(data)
+        result = route_and_store(file_path, data, validation)
+        json_path = save_result_json(file_path, data, validation, sender=sender, index=i)
+        results.append(result)
 
-    if validation.get("needs_human_review"):
-        print("\nDecision: 🚩 HUMAN REVIEW")
-        for flag in validation.get("flags", []):
-            print(f"   - {flag}")
-    else:
-        print("\nDecision: ✅ AUTO-APPROVE")
+        print("Extracted:")
+        for key, value in data.items():
+            print(f"   {key:15}: {value}")
 
-    print(f"Stored in: {result['stored_in']}\n")
-    return result
+        if validation.get("needs_human_review"):
+            print("\nDecision: 🚩 HUMAN REVIEW")
+            for flag in validation.get("flags", []):
+                print(f"   - {flag}")
+        else:
+            print("\nDecision: ✅ AUTO-APPROVE")
+        print(f"Confidence: {validation.get('confidence')}")
+        print(f"Stored in : {result['stored_in']}")
+        print(f"JSON      : {json_path}")
+
+    print()
+    return results
 
 
 def main(argv: list[str]) -> int:
     if len(argv) > 1:
         files = argv[1:]
     else:
-        files = sorted(glob.glob(str(config.DATA_DIR / "employee_*.pdf")))
+        patterns = ["employee_*.pdf", "*.png", "*.jpg", "*.jpeg", "onboarding*.csv"]
+        files = []
+        for pattern in patterns:
+            files.extend(glob.glob(str(config.DATA_DIR / pattern)))
+        files = sorted(set(files))
 
     if not files:
-        print("No files to process. Put PDFs in the data/ folder or pass a path.")
+        print("No files to process. Put files in the data/ folder or pass a path.")
         return 1
 
     approved = review = 0
     for file_path in files:
         try:
-            result = process_document(file_path)
+            results = process_document(file_path)
+        except Exception:  # noqa: BLE001 - keep the batch going
+            traceback.print_exc()
+            review += 1
+            continue
+        for result in results:
             if result["decision"] == "APPROVED":
                 approved += 1
             else:
                 review += 1
-        except Exception:  # noqa: BLE001 - keep the batch going
-            traceback.print_exc()
-            review += 1
 
     print("=" * 64)
     print(f"DONE. Approved: {approved}   Human review: {review}")

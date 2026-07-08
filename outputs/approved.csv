@@ -1,2 +1,7 @@
 timestamp,source_file,employee_name,email,department,manager,office,start_date,decision,flags
 2026-07-08T11:11:23+00:00,E:\heshara\Test_task\data\employee_2.pdf,John Smith,john.smith@flatrock.com,Engineering,Sarah Brown,Colombo,01 August 2026,APPROVED,
+2026-07-08T19:09:53+00:00,data/employee_scanned.png,Priya Fernando,priya.fernando@flatrock.com,Human Resources,Aisha Khan,Colombo,05 September 2026,APPROVED,
+2026-07-08T19:09:53+00:00,data/onboarding_batch.csv,Nadia Hassan,nadia.hassan@flatrock.com,Operations,Tom Wilson,Colombo,2026-08-10,APPROVED,
+2026-07-08T19:20:48+00:00,data/employee_2.pdf,John Smith,john.smith@flatrock.com,Engineering,Sarah Brown,Colombo,01 August 2026,APPROVED,
+2026-07-08T19:20:49+00:00,data/onboarding_batch.csv,Nadia Hassan,nadia.hassan@flatrock.com,Operations,Tom Wilson,Colombo,2026-08-10,APPROVED,
+2026-07-08T19:25:48+00:00,data/onboarding_batch.csv,Nadia Hassan,nadia.hassan@flatrock.com,Operations,Tom Wilson,Colombo,2026-08-10,APPROVED,

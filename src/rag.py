@@ -84,6 +84,16 @@ def validate_onboarding(data: dict) -> dict:
             "detail": expected_manager,
         })
 
+    # 3b) Is the manager a real manager at all? (RAG lookup in the manager directory)
+    if manager:
+        manager_hits = retrieve(f"{manager} manager", n=1, where={"type": "manager"})
+        known_manager = bool(manager_hits) and _loose_match(
+            manager_hits[0][1].get("manager", ""), manager
+        )
+        if not known_manager:
+            flags.append(f"Unknown manager '{manager}' — not in the manager directory")
+        checks.append({"name": "known_manager", "passed": known_manager, "detail": manager})
+
     # 4) Policy: work email must be @flatrock.com
     email = data.get("email", "")
     if email:
@@ -92,6 +102,18 @@ def validate_onboarding(data: dict) -> dict:
             flags.append(f"Email '{email}' is not a valid @flatrock.com address")
         checks.append({"name": "email_domain", "passed": email_ok, "detail": email})
 
+    # 5) Is the office an approved location? (RAG lookup)
+    office = data.get("office", "")
+    office_ok = False
+    if office:
+        office_hits = retrieve(f"{office} office location", n=1, where={"type": "office"})
+        if office_hits:
+            _, meta = office_hits[0]
+            office_ok = _loose_match(meta.get("office", ""), office)
+        if not office_ok:
+            flags.append(f"Office '{office}' is not an approved location")
+        checks.append({"name": "office_valid", "passed": office_ok, "detail": office})
+
     # Retrieve the policy rules most relevant to this record (for transparency).
     policy_query = (
         f"{data.get('department', '')} {data.get('employee_name', '')} "
@@ -99,9 +121,26 @@ def validate_onboarding(data: dict) -> dict:
     )
     relevant_policies = [doc for doc, _ in retrieve(policy_query, n=3, where={"type": "policy"})]
 
+    # Field-level validity summary (handy for the saved JSON record).
+    manager_ok = any(
+        c["name"] == "manager_matches_department" and c["passed"] for c in checks
+    )
+    field_validation = {
+        "department_valid": known_department,
+        "manager_valid": manager_ok,
+        "office_valid": office_ok,
+    }
+
+    # Confidence = share of validation checks that passed.
+    passed = sum(1 for c in checks if c["passed"])
+    total = len(checks)
+    confidence = round(passed / total, 2) if total else 0.0
+
     needs_human_review = len(flags) > 0
     return {
         "checks": checks,
+        "field_validation": field_validation,
+        "confidence": confidence,
         "flags": flags,
         "relevant_policies": relevant_policies,
         "matched_department": matched_department,

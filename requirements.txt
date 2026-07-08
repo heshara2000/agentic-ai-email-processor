@@ -8,11 +8,8 @@ chromadb>=0.5.0
 
 # --- File parsing ---
 pypdf>=4.2.0            # PDF text extraction
-pdf2image>=1.17.0       # PDF -> image fallback for scanned PDFs
-pytesseract>=0.3.10     # OCR for scanned images
-Pillow>=10.3.0          # image handling
+Pillow>=10.3.0          # image handling (generate/read sample form image)
 pandas>=2.2.0           # CSV parsing
-reportlab>=4.2.0        # generate sample PDF documents (demo data)
 
 # --- Utils ---
 python-dotenv>=1.0.1    # load .env

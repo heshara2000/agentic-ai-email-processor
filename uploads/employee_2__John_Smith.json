@@ -1,0 +1,24 @@
+{
+    "metadata": {
+        "file_name": "employee_2.pdf",
+        "sender": "unknown",
+        "processed_at": "2026-07-08T19:20:48+00:00",
+        "document_type": "Employee Onboarding"
+    },
+    "employee_data": {
+        "employee_name": "John Smith",
+        "email": "john.smith@flatrock.com",
+        "department": "Engineering",
+        "manager": "Sarah Brown",
+        "office": "Colombo",
+        "start_date": "01 August 2026"
+    },
+    "validation": {
+        "department_valid": true,
+        "manager_valid": true,
+        "office_valid": true
+    },
+    "flags": [],
+    "status": "Approved",
+    "confidence": 1.0
+}

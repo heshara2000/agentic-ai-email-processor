@@ -1,0 +1,24 @@
+{
+    "metadata": {
+        "file_name": "onboarding_batch.csv",
+        "sender": "unknown",
+        "processed_at": "2026-07-08T19:25:48+00:00",
+        "document_type": "Employee Onboarding"
+    },
+    "employee_data": {
+        "employee_name": "Nadia Hassan",
+        "email": "nadia.hassan@flatrock.com",
+        "department": "Operations",
+        "manager": "Tom Wilson",
+        "office": "Colombo",
+        "start_date": "2026-08-10"
+    },
+    "validation": {
+        "department_valid": true,
+        "manager_valid": true,
+        "office_valid": true
+    },
+    "flags": [],
+    "status": "Approved",
+    "confidence": 1.0
+}
