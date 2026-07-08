@@ -1,5 +1,7 @@
 # --- LLM / Agent ---
 openai>=1.40.0
+langchain-openai>=0.1.20   # LangChain wrapper around OpenAI
+langchain-core>=0.2.30     # LangChain message/prompt primitives
 
 # --- Vector store (RAG) ---
 chromadb>=0.5.0
@@ -15,4 +17,3 @@ reportlab>=4.2.0        # generate sample PDF documents (demo data)
 # --- Utils ---
 python-dotenv>=1.0.1    # load .env
 pydantic>=2.7.0         # schema validation
-langchain_openai
