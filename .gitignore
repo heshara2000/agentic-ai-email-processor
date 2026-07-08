@@ -1,0 +1,27 @@
+# Virtual environment
+env4/
+.venv/
+venv/
+
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Vector store / generated data
+data/chroma/
+data/output/*.csv
+data/output/*.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+
+.env
+__pycache__/
+chroma_db/
