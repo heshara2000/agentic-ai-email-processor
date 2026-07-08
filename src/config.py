@@ -6,9 +6,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Load .env from project root
+# Load .env from project root (override=True so .env wins over stale OS env vars)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT / ".env", override=True)
 
 # --- OpenAI ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
@@ -26,10 +26,10 @@ CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.75"))
 
 # --- Paths ---
 DATA_DIR = PROJECT_ROOT / "data"
-SAMPLES_DIR = DATA_DIR / "samples"
-KNOWLEDGE_DIR = DATA_DIR / "knowledge"
-OUTPUT_DIR = DATA_DIR / "output"
-CHROMA_DIR = DATA_DIR / "chroma"
+SAMPLES_DIR = PROJECT_ROOT / "samples"
+KNOWLEDGE_DIR = PROJECT_ROOT / "knowledge"
+OUTPUT_DIR = PROJECT_ROOT / "output"
+CHROMA_DIR = PROJECT_ROOT / "chroma_db"
 
 for _d in (DATA_DIR, SAMPLES_DIR, KNOWLEDGE_DIR, OUTPUT_DIR, CHROMA_DIR):
     _d.mkdir(parents=True, exist_ok=True)

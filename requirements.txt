@@ -15,3 +15,4 @@ reportlab>=4.2.0        # generate sample PDF documents (demo data)
 # --- Utils ---
 python-dotenv>=1.0.1    # load .env
 pydantic>=2.7.0         # schema validation
+langchain_openai
