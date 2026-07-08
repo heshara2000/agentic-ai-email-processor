@@ -1,0 +1,4 @@
+timestamp,source_file,employee_name,email,department,manager,office,start_date,decision,flags
+2026-07-08T11:11:20+00:00,E:\heshara\Test_task\data\employee_1.pdf,John Smith,john.smith@gmail.com,Engineering,Sarah Brown,Colombo,2026-08-01,HUMAN_REVIEW,Email 'john.smith@gmail.com' is not a valid @flatrock.com address
+2026-07-08T11:11:25+00:00,E:\heshara\Test_task\data\employee_3.pdf,Maria Gonzalez-Reyes,maria.reyes(at)flatrock.com,Marketing,,Remote / Kandy,,HUMAN_REVIEW,"Missing required fields: manager, start_date | Email 'maria.reyes(at)flatrock.com' is not a valid @flatrock.com address"
+2026-07-08T11:11:27+00:00,E:\heshara\Test_task\data\employee_4.pdf,Daniel O'Connor,daniel.oconnor@flatrock.com,Sales,Sarah Brown,Colombo,15 September 2026,HUMAN_REVIEW,Manager 'Sarah Brown' does not manage Sales (directory shows Michael Green)
