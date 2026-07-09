@@ -1,4 +1,0 @@
-%PDF-1.4 THIS IS NOT A REAL PDF — the bytes are intentionally corrupted so the
-pipeline cannot parse it. Used to demonstrate graceful error handling:
-the agent logs the failure and routes this file to human review instead of crashing.
-%%EOF-garbage-<<<>>>@@@###
