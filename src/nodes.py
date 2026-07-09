@@ -60,7 +60,9 @@ def _parse_json(raw: str) -> dict:
         text = text.split("```", 2)[1]
         if text.lstrip().lower().startswith("json"):
             text = text.lstrip()[4:]
+
     text = text.strip().strip("`").strip()
+    
     try:
         return json.loads(text)
     except json.JSONDecodeError:

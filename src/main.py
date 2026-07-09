@@ -1,11 +1,9 @@
 """End-to-end pipeline: extract -> RAG validate -> route -> store.
 
 Usage:
-    # process every PDF in the data/ folder
+    # process every PDF, image, and CSV files in the data/
     e:/heshara/Test_task/env4/Scripts/python.exe src/main.py
 
-    # process a single file
-    e:/heshara/Test_task/env4/Scripts/python.exe src/main.py data/employee_2.pdf
 """
 from __future__ import annotations
 
@@ -32,7 +30,7 @@ def process_document(file_path: str, sender: str | None = None) -> list[dict]:
 
     try:
         records = extract_records(file_path)
-    except Exception as exc:  # noqa: BLE001 - a bad/corrupt file must not crash the batch
+    except Exception as exc:  #  a bad/corrupt file must not crash the batch
         log.error("Could not read/extract this file: %s: %s", type(exc).__name__, exc)
         validation = {
             "needs_human_review": True,
