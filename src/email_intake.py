@@ -1,17 +1,14 @@
 """Email intake: pick up an email with a file attachment and run the pipeline.
 
-Two modes:
 
-  # Offline: read a saved .eml file (great for demos)
-  e:/heshara/Test_task/env4/Scripts/python.exe src/email_intake.py eml data/sample_email.eml
-
-  # Live: poll an IMAP inbox (Gmail etc.) for UNREAD messages with attachments
-  e:/heshara/Test_task/env4/Scripts/python.exe src/email_intake.py imap
+  #for UNREAD messages with attachments
+  python src/email_intake.py imap
 """
 from __future__ import annotations
 
 import email
 import imaplib
+import os
 import sys
 from email import policy
 from pathlib import Path
@@ -27,6 +24,11 @@ INBOX_DIR.mkdir(parents=True, exist_ok=True)
 
 # Attachment types the pipeline can currently handle.
 SUPPORTED_SUFFIXES = {".pdf", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".csv"}
+
+# Safety limits for a real inbox: never churn through hundreds of old emails.
+MAX_EMAILS = int(os.getenv("IMAP_MAX_EMAILS", "5"))
+# Optional: only pick up emails whose subject contains this text (set in .env).
+SUBJECT_FILTER = os.getenv("IMAP_SUBJECT_FILTER", "").strip()
 
 
 def _save_attachments(msg, out_dir: Path) -> list[str]:
@@ -76,12 +78,22 @@ def from_imap() -> list[tuple[str, str]]:
     imap.login(config.IMAP_USER, config.IMAP_PASSWORD)
     imap.select(config.IMAP_FOLDER)
 
-    _, data = imap.search(None, "UNSEEN")
+    criteria = ["UNSEEN"]
+    if SUBJECT_FILTER:
+        criteria += ["SUBJECT", SUBJECT_FILTER]
+    _, data = imap.search(None, *criteria)
     message_ids = data[0].split()
-    log.info("   %d unread message(s) found", len(message_ids))
+
+    # Only handle the most recent MAX_EMAILS messages (newest first).
+    recent_ids = message_ids[-MAX_EMAILS:]
+    log.info(
+        "   %d unread message(s) found; processing the %d most recent",
+        len(message_ids),
+        len(recent_ids),
+    )
 
     saved: list[tuple[str, str]] = []
-    for num in message_ids:
+    for num in reversed(recent_ids):
         _, msg_data = imap.fetch(num, "(RFC822)")
         raw = msg_data[0][1]
         msg = email.message_from_bytes(raw, policy=policy.default)
