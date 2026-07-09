@@ -1,0 +1,40 @@
+%% Employee Onboarding AI Agent — End-to-End Architecture
+flowchart TD
+    subgraph INTAKE["1 · Email Intake"]
+        A["Email with attachment<br/>PDF / Image / CSV"] --> B{"Source"}
+        B -->|"Live inbox"| C["IMAP poll Gmail<br/>(email_intake.py)"]
+        B -->|"Offline demo"| D[".eml file"]
+        C --> E["Save attachment<br/>-> data/inbox/"]
+        D --> E
+    end
+
+    subgraph EXTRACT["2 · Extraction (nodes.py)"]
+        E --> F{"File type?"}
+        F -->|"PDF"| G["pypdf -> text"]
+        F -->|"Image"| H["GPT-4o-mini Vision"]
+        F -->|"CSV"| I["pandas -> rows"]
+        G --> J["LLM extract<br/>structured JSON"]
+        H --> J
+        I --> J
+    end
+
+    subgraph RAG["3 · RAG Validation (rag.py + ChromaDB)"]
+        J --> K["Semantic queries"]
+        K --> L[("Departments")]
+        K --> M[("Managers")]
+        K --> N[("Offices")]
+        K --> O[("Policy rules")]
+        L --> P["Cross-reference<br/>flags + confidence"]
+        M --> P
+        N --> P
+        O --> P
+    end
+
+    subgraph ROUTE["4 · Routing & Action (storage.py)"]
+        P --> Q{"Needs human review?"}
+        Q -->|"No · high confidence"| R["approved.csv"]
+        Q -->|"Yes · flagged"| S["human_review.csv"]
+        R --> T["uploads/*.json<br/>(full reviewable record)"]
+        S --> T
+        T --> U["logs/pipeline_*.log"]
+    end

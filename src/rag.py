@@ -34,7 +34,7 @@ def _loose_match(a: str, b: str) -> bool:
 
 
 def validate_onboarding(data: dict) -> dict:
-    """Validate extracted onboarding data against the RAG knowledge base.
+    """Validate extracted  data against the RAG knowledge base.
 
     Returns a dict with per-check results, human-readable flags, the supporting
     policy snippets that were retrieved, and a needs_human_review decision.
@@ -42,14 +42,14 @@ def validate_onboarding(data: dict) -> dict:
     flags: list[str] = []
     checks: list[dict] = []
 
-    # 1) Required fields present?
+    # Required fields 
     required = ["employee_name", "email", "department", "manager", "start_date"]
     missing = [f for f in required if not _norm(data.get(f))]
     if missing:
         flags.append("Missing required fields: " + ", ".join(missing))
     checks.append({"name": "required_fields", "passed": not missing, "detail": missing})
 
-    # 2) Is the department real? (RAG lookup in the directory)
+    # RAG lookup in the directory
     department = data.get("department", "")
     matched_department = None
     expected_manager = None
@@ -69,7 +69,7 @@ def validate_onboarding(data: dict) -> dict:
         "detail": matched_department,
     })
 
-    # 3) Does the manager actually manage that department? (RAG cross-reference)
+    # check the manager actually manage that department
     manager = data.get("manager", "")
     if known_department and manager and expected_manager:
         manager_ok = _loose_match(manager, expected_manager)
@@ -84,7 +84,7 @@ def validate_onboarding(data: dict) -> dict:
             "detail": expected_manager,
         })
 
-    # 3b) Is the manager a real manager at all? (RAG lookup in the manager directory)
+    #  lookup in the manager directory
     if manager:
         manager_hits = retrieve(f"{manager} manager", n=1, where={"type": "manager"})
         known_manager = bool(manager_hits) and _loose_match(
@@ -102,7 +102,7 @@ def validate_onboarding(data: dict) -> dict:
             flags.append(f"Email '{email}' is not a valid @flatrock.com address")
         checks.append({"name": "email_domain", "passed": email_ok, "detail": email})
 
-    # 5) Is the office an approved location? (RAG lookup)
+    #  verify the office an approved location 
     office = data.get("office", "")
     office_ok = False
     if office:
@@ -114,14 +114,15 @@ def validate_onboarding(data: dict) -> dict:
             flags.append(f"Office '{office}' is not an approved location")
         checks.append({"name": "office_valid", "passed": office_ok, "detail": office})
 
-    # Retrieve the policy rules most relevant to this record (for transparency).
+    # Retrieve the policy rules most relevant to this record 
     policy_query = (
         f"{data.get('department', '')} {data.get('employee_name', '')} "
         f"start date {data.get('start_date', '')} email {email}"
     )
     relevant_policies = [doc for doc, _ in retrieve(policy_query, n=3, where={"type": "policy"})]
 
-    # Field-level validity summary (handy for the saved JSON record).
+    # Field-level validity summary
+    
     manager_ok = any(
         c["name"] == "manager_matches_department" and c["passed"] for c in checks
     )
