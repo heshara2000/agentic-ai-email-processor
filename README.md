@@ -1,8 +1,7 @@
-# Employee Onboarding AI Agent
+# AI Agent
 
-An **agentic AI system** that automatically processes employee onboarding documents received by **email**. When an onboarding form arrives as an attachment (PDF, image, or CSV), an AI agent reads it, extracts structured data, **validates it against a company knowledge base using RAG**, and routes the result: clean records are auto-approved, anything uncertain is flagged for human review.
 
-Built for the **Agentic AI Engineer** test task (Flat Rock Technology). Scenario: **HR onboarding automation** (deliberately not invoices).
+Built for the **Agentic AI Engineer** test task (Flat Rock Technology). 
 
 ---
 
@@ -10,9 +9,8 @@ Built for the **Agentic AI Engineer** test task (Flat Rock Technology). Scenario
 
 ![Architecture](docs/architecture.png)
 
-```mermaid
 flowchart LR
-    A[Email + attachment<br/>PDF / Image / CSV] --> B[Email Intake<br/>IMAP or .eml]
+    A[Email + attachment<br/>PDF / Image / CSV] --> B[Email Intake<br/>Gmail IMAP]
     B --> C[Extraction<br/>PDF / Vision / CSV -> JSON]
     C --> D[RAG Validation<br/>ChromaDB knowledge base]
     D --> E{Confident &<br/>compliant?}
@@ -26,7 +24,7 @@ flowchart LR
 
 ## What it does (end to end)
 
-1. **Email intake** — picks up an email with an attachment, either from a **live Gmail inbox (IMAP)** or an offline **`.eml`** file.
+1. **Email intake** — picks up an unread email with an attachment from a **live Gmail inbox (IMAP)**.
 2. **Extraction** — reads the attachment and extracts structured JSON. Handles three formats:
    - **PDF** → text via `pypdf`
    - **Image** (scanned form) → `gpt-4o-mini` **vision**
@@ -67,7 +65,6 @@ A small set of company documents is loaded into a **ChromaDB** vector store (`bu
 | `knowledge_base/offices.md` | Is the office an approved location? |
 | `knowledge_base/onboarding_policy.md` | Email domain, required fields, contract rules, etc. |
 
-**Example of RAG changing the decision:** a record for *Daniel O'Connor — Sales — manager Sarah Brown* looks perfectly clean on extraction. But the directory shows Sarah Brown manages **Engineering**, not Sales, so RAG flags it for human review. Without the knowledge base, it would have been wrongly approved.
 
 Each record also gets a **confidence score** = the share of validation checks that passed.
 
@@ -77,8 +74,8 @@ Each record also gets a **confidence score** = the share of validation checks th
 
 | Outcome | Condition | Stored in |
 |---|---|---|
-| ✅ **Approved** | All checks pass | `outputs/approved.csv` |
-| 🚩 **Human review** | Missing field, unknown dept/manager/office, policy violation, or unreadable file | `outputs/human_review.csv` |
+| **Approved** | All checks pass | `outputs/approved.csv` |
+| **Human review** | Missing field, unknown dept/manager/office, policy violation, or unreadable file | `outputs/human_review.csv` |
 
 Every processed record (both outcomes) is also written to `uploads/<file>__<name>.json`:
 
@@ -103,7 +100,6 @@ Every processed record (both outcomes) is also written to `uploads/<file>__<name
 ## Handling things going wrong
 
 - **Missing fields** → flagged and routed to human review
-- **Messy input** (e.g. `maria.reyes(at)flatrock.com`, "next Monday") → captured as-is and flagged, never guessed
 - **Unknown department / manager / office** → caught by RAG
 - **Policy violations** (e.g. non-`@flatrock.com` email) → flagged
 - **Corrupt / unreadable file** → caught by `try/except`, logged, and routed to review — the batch never crashes
@@ -115,7 +111,7 @@ Every processed record (both outcomes) is also written to `uploads/<file>__<name
 - **LLM:** OpenAI `gpt-4o-mini` (text + vision) via **LangChain**
 - **Vector store / RAG:** **ChromaDB** (local, persistent)
 - **File parsing:** `pypdf` (PDF), OpenAI vision (images), `pandas` (CSV)
-- **Email:** `imaplib` (live Gmail) + Python `email` (`.eml`)
+- **Email:** `imaplib` (live Gmail IMAP)
 - **Language:** Python 3.12
 
 ---
@@ -156,7 +152,7 @@ Test_task/
 
 2. **Create a `.env` file** in the project root (see `.env.example`):
    ```
-   OPENAI_API_KEY=sk-your-key
+   OPENAI_API_KEY=''
    OPENAI_MODEL=gpt-4o-mini
 
    # Only needed for live email mode:
@@ -167,7 +163,6 @@ Test_task/
    IMAP_FOLDER=INBOX
    IMAP_SUBJECT_FILTER=Onboarding
    ```
-   > For Gmail, create an **App Password** at https://myaccount.google.com/apppasswords (requires 2-Step Verification).
 
 3. **Build the knowledge base** (once, or after editing `knowledge_base/`):
    ```powershell
@@ -181,10 +176,7 @@ Test_task/
 **Full end-to-end (email intake → pipeline):**
 ```powershell
 # Live Gmail: pick up unread emails with attachments
-python src/email_intake.py imap
-
-# Offline demo: process a saved .eml file
-python src/email_intake.py eml data/sample_email_2.eml
+python src/email_intake.py
 ```
 
 **Pipeline only (skip email, process files already in `data/`):**

@@ -1,8 +1,10 @@
-"""Email intake: pick up an email with a file attachment and run the pipeline.
+"""Email intake: pick up unread emails with attachments and run the pipeline.
 
+    python src/email_intake.py
 
-  #for UNREAD messages with attachments
-  python src/email_intake.py imap
+Connects to a live IMAP inbox (e.g. Gmail), finds the most recent UNREAD
+messages with supported attachments, saves them, and runs each through the
+full pipeline (extract -> RAG validate -> route -> store).
 """
 from __future__ import annotations
 
@@ -51,17 +53,6 @@ def _save_attachments(msg, out_dir: Path) -> list[str]:
     return saved
 
 
-def from_eml(eml_path: str) -> list[tuple[str, str]]:
-    """Extract attachments from a local .eml file. Returns [(path, sender)]."""
-    log.info("Reading email file: %s", eml_path)
-    with open(eml_path, "rb") as fh:
-        msg = email.message_from_binary_file(fh, policy=policy.default)
-    sender = str(msg["from"] or "unknown")
-    log.info("   From   : %s", sender)
-    log.info("   Subject: %s", msg["subject"])
-    return [(path, sender) for path in _save_attachments(msg, INBOX_DIR)]
-
-
 def from_imap() -> list[tuple[str, str]]:
     """Fetch attachments from UNREAD messages in a live IMAP inbox. Returns [(path, sender)]."""
     if (
@@ -105,18 +96,8 @@ def from_imap() -> list[tuple[str, str]]:
     return saved
 
 
-def run(mode: str, arg: str | None) -> int:
-    if mode == "eml":
-        if not arg:
-            log.error("Usage: python src/email_intake.py eml <path-to-.eml>")
-            return 1
-        attachments = from_eml(arg)
-    elif mode == "imap":
-        attachments = from_imap()
-    else:
-        log.error("Unknown mode. Use:  eml <file>   or   imap")
-        return 1
-
+def run() -> int:
+    attachments = from_imap()
     if not attachments:
         log.warning("No supported attachments found.")
         return 0
@@ -128,6 +109,4 @@ def run(mode: str, arg: str | None) -> int:
 
 
 if __name__ == "__main__":
-    mode = sys.argv[1] if len(sys.argv) > 1 else "imap"
-    arg = sys.argv[2] if len(sys.argv) > 2 else None
-    sys.exit(run(mode, arg))
+    sys.exit(run())

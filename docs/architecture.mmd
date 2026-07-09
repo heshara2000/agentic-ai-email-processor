@@ -1,11 +1,8 @@
 %% Employee Onboarding AI Agent — End-to-End Architecture
 flowchart TD
     subgraph INTAKE["1 · Email Intake"]
-        A["Email with attachment<br/>PDF / Image / CSV"] --> B{"Source"}
-        B -->|"Live inbox"| C["IMAP poll Gmail<br/>(email_intake.py)"]
-        B -->|"Offline demo"| D[".eml file"]
+        A["Unread email with attachment<br/>PDF / Image / CSV"] --> C["IMAP poll Gmail<br/>(email_intake.py)"]
         C --> E["Save attachment<br/>-> data/inbox/"]
-        D --> E
     end
 
     subgraph EXTRACT["2 · Extraction (nodes.py)"]
