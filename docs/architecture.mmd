@@ -33,5 +33,5 @@ flowchart TD
         Q -->|"Yes · flagged"| S["human_review.csv"]
         R --> T["uploads/*.json<br/>(full reviewable record)"]
         S --> T
-        T --> U["logs/pipeline_*.log"]
+        T --> U["logs/emailagent_*.log"]
     end
