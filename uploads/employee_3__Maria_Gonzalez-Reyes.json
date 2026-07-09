@@ -1,0 +1,27 @@
+{
+    "metadata": {
+        "file_name": "employee_3.pdf",
+        "sender": "unknown",
+        "processed_at": "2026-07-09T17:41:15+00:00",
+        "document_type": "Employee Onboarding"
+    },
+    "employee_data": {
+        "employee_name": "Maria Gonzalez-Reyes",
+        "email": "maria.reyes(at)flatrock.com",
+        "department": "Marketing",
+        "manager": "",
+        "office": "Remote / Kandy",
+        "start_date": ""
+    },
+    "validation": {
+        "department_valid": true,
+        "manager_valid": false,
+        "office_valid": true
+    },
+    "flags": [
+        "Missing required fields: manager, start_date",
+        "Email 'maria.reyes(at)flatrock.com' is not a valid @flatrock.com address"
+    ],
+    "status": "Human Review",
+    "confidence": 0.5
+}
