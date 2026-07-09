@@ -10,6 +10,7 @@ turns raw extraction into a validated, routable result.
 """
 from __future__ import annotations
 
+import config
 from build_kb import get_collection
 
 
@@ -122,7 +123,7 @@ def validate_onboarding(data: dict) -> dict:
     relevant_policies = [doc for doc, _ in retrieve(policy_query, n=3, where={"type": "policy"})]
 
     # Field-level validity summary
-    
+
     manager_ok = any(
         c["name"] == "manager_matches_department" and c["passed"] for c in checks
     )
@@ -137,7 +138,9 @@ def validate_onboarding(data: dict) -> dict:
     total = len(checks)
     confidence = round(passed / total, 2) if total else 0.0
 
-    needs_human_review = len(flags) > 0
+    # Route to human review if anything was flagged OR confidence is below the
+    # configured threshold (CONFIDENCE_THRESHOLD in .env).
+    needs_human_review = bool(flags) or confidence < config.CONFIDENCE_THRESHOLD
     return {
         "checks": checks,
         "field_validation": field_validation,
