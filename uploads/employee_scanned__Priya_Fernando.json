@@ -1,0 +1,24 @@
+{
+    "metadata": {
+        "file_name": "employee_scanned.png",
+        "sender": "unknown",
+        "processed_at": "2026-07-10T04:13:22+00:00",
+        "document_type": "Employee Onboarding"
+    },
+    "employee_data": {
+        "employee_name": "Priya Fernando",
+        "email": "priya.fernando@flatrock.com",
+        "department": "Human Resources",
+        "manager": "Aisha Khan",
+        "office": "Colombo",
+        "start_date": "05 September 2026"
+    },
+    "validation": {
+        "department_valid": true,
+        "manager_valid": true,
+        "office_valid": true
+    },
+    "flags": [],
+    "status": "Approved",
+    "confidence": 1.0
+}
